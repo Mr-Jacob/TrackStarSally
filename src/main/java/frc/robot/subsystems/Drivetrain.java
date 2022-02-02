@@ -14,6 +14,11 @@ import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants;
+
+//primary motor ID's: left = 0, right = 2
+//follower motor ID's: left = 1, right = 3
+//current drive type: Cheesy Drive-*see Joystick_Drive Command
 
 /** Add your docs here. */
 public class Drivetrain extends SubsystemBase {
@@ -28,10 +33,17 @@ public class Drivetrain extends SubsystemBase {
   private DifferentialDrive _drive = new DifferentialDrive(leftDriveMaster, rightDriveMaster);
 
   public void sys_init() {
+
+
     leftDriveMaster.configFactoryDefault();
     rightDriveMaster.configFactoryDefault();
     leftDriveSlave.configFactoryDefault();
     rightDriveSlave.configFactoryDefault();
+
+    rightDriveSlave.configNeutralDeadband(.001);
+    leftDriveSlave.configNeutralDeadband(.001);
+
+    _drive.setDeadband(0.08);
 
     //configure power current limits
     leftDriveMaster.configSupplyCurrentLimit(new  SupplyCurrentLimitConfiguration(true, 40, 0, 0));
@@ -39,10 +51,15 @@ public class Drivetrain extends SubsystemBase {
     leftDriveSlave.configSupplyCurrentLimit(new SupplyCurrentLimitConfiguration(true, 40, 0, 0));
     rightDriveSlave.configSupplyCurrentLimit(new SupplyCurrentLimitConfiguration(true, 40, 0, 0));
 
-    leftDriveMaster.configVoltageCompSaturation(10);
-    rightDriveMaster.configVoltageCompSaturation(10);
-    leftDriveSlave.configVoltageCompSaturation(10);
-    rightDriveSlave.configVoltageCompSaturation(10);
+    leftDriveMaster.enableVoltageCompensation(true);
+    rightDriveMaster.enableVoltageCompensation(true);
+    leftDriveSlave.enableVoltageCompensation(true);
+    rightDriveSlave.enableVoltageCompensation(true);
+
+    leftDriveMaster.configVoltageCompSaturation(12);
+    rightDriveMaster.configVoltageCompSaturation(12);
+    leftDriveSlave.configVoltageCompSaturation(12);
+    rightDriveSlave.configVoltageCompSaturation(12);
 
 
     //motor control method
@@ -54,21 +71,21 @@ public class Drivetrain extends SubsystemBase {
     leftDriveSlave.follow(leftDriveMaster);
     rightDriveSlave.follow(rightDriveMaster);
 
-    //Drivetrain Motor Inversion-see Constants
-    leftDriveMaster.setInverted(false);
-    rightDriveMaster.setInverted(false);
+    //Drivetrain Motor Inversion
+    leftDriveMaster.setInverted(Constants.left_MasterDrive_isInverted);
+    rightDriveMaster.setInverted(Constants.right_MasterDrive_isInverted);
 
-    leftDriveSlave.setInverted(true);
-    rightDriveSlave.setInverted(true);
+    leftDriveSlave.setInverted(Constants.left_SlaveDrive_isInverted);
+    rightDriveSlave.setInverted(Constants.right_SlaveDrive_isInverted);
 
     _drive.setMaxOutput(1);
   }
 
-  public void arcadeDrive(double thrust_axis, double rotation_axis, boolean isSquared){
+  public void curvatureDrive(double thrust_axis, double rotation_axis, boolean isSquared){
     double thrust, rotation = 0;
     thrust = thrust_axis * 1;
     rotation = -rotation_axis;
-    _drive.arcadeDrive(thrust, rotation, isSquared);
+    _drive.curvatureDrive(thrust, rotation, isSquared);
   }
 
   public void setDrive(boolean is_squared) {
@@ -88,7 +105,7 @@ public class Drivetrain extends SubsystemBase {
     double y = ty.getDouble(0.0);
     double area = ta.getDouble(0.0);
 
-    table.getEntry("ledMode").setNumber(0);
+    table.getEntry("ledMode").setNumber(3);
   }
 
   double kP = -0.08;

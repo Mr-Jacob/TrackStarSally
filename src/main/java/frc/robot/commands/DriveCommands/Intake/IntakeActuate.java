@@ -25,11 +25,7 @@ public class IntakeActuate extends CommandBase {
   @Override
   public void execute() {
     System.out.println("Intake Initiated...");
-    
   }
-
-
-
   // Called once after isFinished returns true
   @Override
   public void end(boolean interrupted) {}

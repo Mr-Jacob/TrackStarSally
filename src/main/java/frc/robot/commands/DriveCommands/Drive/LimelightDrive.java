@@ -15,13 +15,14 @@ public class LimelightDrive extends CommandBase {
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
+    System.out.print("Limelight On...\n");
   }
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
     // THRUST, ROTATION, SQUARED INPUTS
-    m_driveSubsystem.arcadeDrive(RobotContainer.controller_1.getLeftY(), m_driveSubsystem.limelight_tracking(), true);
+    m_driveSubsystem.curvatureDrive(RobotContainer.controller_1.getLeftY(), m_driveSubsystem.limelight_tracking(), true);
   }
 
   // Called once the command ends or is interrupted.

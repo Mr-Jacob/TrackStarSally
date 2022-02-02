@@ -1,12 +1,12 @@
 package frc.robot.commands.DriveCommands.Cartridge;
 
 import edu.wpi.first.wpilibj2.command.CommandBase;
-import frc.robot.subsystems.Cartridge;
+import frc.robot.subsystems.Indexer;
 
 public class IndexerStandby extends CommandBase {
-  private final Cartridge m_IndexerSubsystem;
+  private final Indexer m_IndexerSubsystem;
   
-  public IndexerStandby(Cartridge subsystem) {
+  public IndexerStandby(Indexer subsystem) {
     m_IndexerSubsystem = subsystem;
     addRequirements(m_IndexerSubsystem);
   }
@@ -14,13 +14,13 @@ public class IndexerStandby extends CommandBase {
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
-    System.out.println("Standby...");
+    m_IndexerSubsystem.set_indexer(0);
+    System.out.println("Indexer Standby...\n");
   }
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    m_IndexerSubsystem.set_filter(0);
   }
 
   // Called once the command ends or is interrupted.

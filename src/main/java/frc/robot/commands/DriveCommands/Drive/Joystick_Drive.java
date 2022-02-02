@@ -22,14 +22,12 @@ public class Joystick_Drive extends CommandBase {
   @Override
   public void execute() {
     // THRUST, ROTATION, SQUARED INPUTS
-    m_driveSubsystem.arcadeDrive(RobotContainer.controller_1.getLeftY(), RobotContainer.controller_1.getRightX(), true);
-    System.out.print("Limelight On");
+    m_driveSubsystem.curvatureDrive(RobotContainer.controller_1.getLeftY(), RobotContainer.controller_1.getRightX(), true);
   }
 
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
-    System.out.print("Limelight Off");
   }
 
   // Returns true when the command should end.

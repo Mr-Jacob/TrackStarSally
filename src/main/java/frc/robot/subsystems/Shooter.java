@@ -3,26 +3,35 @@ package frc.robot.subsystems;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
-import edu.wpi.first.wpilibj2.command.CommandBase;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
-import com.ctre.phoenix.motorcontrol.TalonFXFeedbackDevice;
+
 import com.ctre.phoenix.motorcontrol.ControlMode;
+import com.ctre.phoenix.motorcontrol.NeutralMode;
+import com.ctre.phoenix.motorcontrol.SupplyCurrentLimitConfiguration;
+import com.ctre.phoenix.motorcontrol.TalonFXFeedbackDevice;
+
+//note: left shooter motor is primary motor. Right follows left. ID's: 10(left) and 11(right)
 
 
-public final class Shooter extends CommandBase {
+public class Shooter extends SubsystemBase {
+
 	/* Hardware */
   private final WPI_TalonFX _shooterLeftFx = new WPI_TalonFX(Constants.left_shooter);
   private final WPI_TalonFX _shooterRightFx = new WPI_TalonFX(Constants.right_shooter);
   DoubleSolenoid _hoodSolenoid = new DoubleSolenoid(PneumaticsModuleType.CTREPCM, 0, 4);
-
-  private final Cartridge _cartridge = new Cartridge();
-  private final Indexer2 _indexer = new Indexer2();
   
   public void sys_init() {
+    _hoodSolenoid.set(Value.kReverse);
+    hoodEnabled = false;
+
     _shooterLeftFx.configFactoryDefault();
     _shooterRightFx.configFactoryDefault();
+
+    _shooterLeftFx.configSupplyCurrentLimit(new SupplyCurrentLimitConfiguration(true, 40, 0, 0));
+    _shooterRightFx.configSupplyCurrentLimit(new SupplyCurrentLimitConfiguration(true, 40, 0, 0));
 
     _shooterLeftFx.set(ControlMode.PercentOutput, 0);
     _shooterRightFx.set(ControlMode.PercentOutput, 0);
@@ -36,10 +45,10 @@ public final class Shooter extends CommandBase {
                                   
     _shooterLeftFx.setSensorPhase(true);
     
-    _shooterLeftFx.configNominalOutputForward(0, Constants.k_left_shoot_TimeoutMs);
-		_shooterLeftFx.configNominalOutputReverse(0, Constants.k_left_shoot_TimeoutMs);
-		_shooterLeftFx.configPeakOutputForward(1, Constants.k_left_shoot_TimeoutMs);
-    _shooterLeftFx.configPeakOutputReverse(-1, Constants.k_left_shoot_TimeoutMs);
+    _shooterLeftFx.configNominalOutputForward(0, Constants.k_index_band_TimeoutMs);
+		_shooterLeftFx.configNominalOutputReverse(0, Constants.k_index_band_TimeoutMs);
+		_shooterLeftFx.configPeakOutputForward(1, Constants.k_index_band_TimeoutMs);
+    _shooterLeftFx.configPeakOutputReverse(-1, Constants.k_index_band_TimeoutMs);
     
     _shooterLeftFx.configAllowableClosedloopError(0, Constants.k_filter_wheel_PIDLoopIdx, Constants.k_filter_wheel_TimeoutMs);
 
@@ -49,75 +58,53 @@ public final class Shooter extends CommandBase {
     _shooterLeftFx.config_kD(Constants.k_filter_wheel_PIDLoopIdx, Constants.k_left_shoot_Gains.kD, Constants.k_filter_wheel_TimeoutMs);
 
     _shooterRightFx.follow(_shooterLeftFx);
+    _shooterLeftFx.configClosedloopRamp(1);
+    _shooterLeftFx.setNeutralMode(NeutralMode.Coast);
 
-    System.out.println("Shooter Initiated...");
 	}
 
-  private double live_velocity;
-  private boolean shooter_isReady = false;
-  private boolean shooter_longshot = false;
-  private boolean shooter_shortshot = false;
-  private boolean hoodEnabled = false;
-  private boolean hoodDisabled = true;
-  private int Velocity;
+  @Override
+  public void periodic(){
+    get_shooterVelocity();
+  }
+
+  double activeVelocity;
+  private boolean hoodEnabled;
+  boolean shooter_ready = false;
 
   //revs up shooter, automatically triggers indexer band when ready
   //shooter_shortV & shooter_longV
-  public void shooterActivate(){
-    set_shooter_speed();
-    _shooterLeftFx.set(ControlMode.Velocity, Velocity);
+  public void set_shooter_velocity(double velocity) {
+    _shooterLeftFx.set(ControlMode.Velocity, velocity);
   }
 
-  public void set_shooter_speed(){
-    if(hoodEnabled){
-      Velocity = Constants.shooter_longV;
-    }else if(hoodDisabled){
-      Velocity = Constants.shooter_shortV;
-    }
-  }
 
-  public void auto_shoot(){
+  //gets and returns shooter velocity for autonomous ball sending based on motor velocity
+  public void get_shooterVelocity(){
 
-    //watch shooter velocity when indexer activates
-
-    if(live_velocity>Constants.shooter_longV-2 && shooter_longshot == true){
-      shooter_isReady = true;
-    } else if(live_velocity>Constants.shooter_shortV-2 && shooter_shortshot == true){
-      shooter_isReady = true;
+    if(_shooterLeftFx.getSelectedSensorPosition() >= Constants.motorVelocity){
+      shooter_ready = true;
     } else {
-      shooter_isReady = false;
+      shooter_ready = false;
     }
+  }
 
-    if(shooter_isReady = true){
-      _cartridge.set_bands_speed(.65);
-      _indexer.reset_ballcount();
-    } else{
-      _cartridge.set_bands_speed(0);
-    }
+  public boolean get_readyState(){
+    return shooter_ready;
   }
 
   //stops shooter from spinning
   public void stop_shooter() {
-    _shooterLeftFx.set(ControlMode.PercentOutput, .15);
-    shooter_isReady = false;
+   _shooterLeftFx.set(ControlMode.PercentOutput, 0);
   }
-
-  //periodically gets live motor velocity from shooter
-  public void shooterPeriodic(){
-    live_velocity = _shooterLeftFx.getActiveTrajectoryVelocity(0);
-    }
 
   public void toggle_shooter_hood() {
     if(hoodEnabled){
       _hoodSolenoid.set(Value.kReverse);
-      shooter_longshot = false;
-      shooter_shortshot = true;
-      hoodDisabled = false;
+      hoodEnabled = false;
     } else {
       _hoodSolenoid.set(Value.kForward);
-      shooter_longshot = true;
-      shooter_shortshot = false;
-      hoodDisabled = true;
+      hoodEnabled = true;
     }
   }
 }

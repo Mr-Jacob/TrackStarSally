@@ -23,14 +23,15 @@ public class IntakeIn extends CommandBase {
   // Called repeatedly when this Command is scheduled to run
   @Override
   public void execute() {
-    System.out.println("Intake Withdrawn...");
   }
 
 
 
   // Called once after isFinished returns true
   @Override
-  public void end(boolean interrupted) {}
+  public void end(boolean interrupted) {
+    System.out.println("Intake Withdrawn...");
+  }
 
   // Make this return true when this Command no longer needs to run execute()
   @Override

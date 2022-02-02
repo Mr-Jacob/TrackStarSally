@@ -1,41 +1,46 @@
-
 package frc.robot.commands.DriveCommands.Cartridge;
 
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.CommandBase;
-import frc.robot.subsystems.Cartridge;
+import frc.robot.subsystems.Indexer;
 
-public class IndexerShoot extends CommandBase {
-  private final Cartridge m_IndexerSubsystem;
-  public IndexerShoot(Cartridge m_Subsystem) {
-    m_IndexerSubsystem = m_Subsystem;
+public class IndexerAcceptBall extends CommandBase {
+  private Indexer m_IndexerSubsystem;
+  private Timer m_Timer;
+
+  public IndexerAcceptBall(Indexer subsystem) {
+    m_IndexerSubsystem = subsystem;
     addRequirements(m_IndexerSubsystem);
   }
 
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
+    m_IndexerSubsystem.set_indexer(0.3);
+    m_IndexerSubsystem.ballcount();
+    System.out.println("Accepting Ball...");
+    m_Timer = new Timer();
+    m_Timer.start();
   }
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-      m_IndexerSubsystem.set_indexer(0.65);
-      m_IndexerSubsystem.set_filter(0.5);
-      m_IndexerSubsystem.set_bands_speed(0.2);
   }
 
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
     m_IndexerSubsystem.set_indexer(0);
-    m_IndexerSubsystem.set_filter(0);
-    m_IndexerSubsystem.set_bands_speed(0);
-    m_IndexerSubsystem.reset_ball_count();
   }
 
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
-    return false;
+    if(m_Timer.get() > 0.35) {
+      return true;
+    } else {
+      return false;
+    }
   }
-}
+}                         

@@ -1,63 +1,98 @@
+/*----------------------------------------------------------------------------*/
+/* Copyright (c) 2017-2019 FIRST. All Rights Reserved.                        */
+/* Open Source Software - may be modified and shared by FRC teams. The code   */
+/* must be accompanied by the FIRST BSD license file in the root directory of */
+/* the project.                                                               */
+/*----------------------------------------------------------------------------*/
 
 package frc.robot;
 
+import edu.wpi.first.cscore.VideoMode.PixelFormat;
+import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import frc.robot.subsystems.Indexer2;
-import frc.robot.subsystems.Shooter;
 
 public class Robot extends TimedRobot {
   private Command m_autonomousCommand;
 
   private RobotContainer m_robotContainer;
-  private Shooter _shooter;
-  private Indexer2 _indexer;
-  //private Color_Sensor color_sense;
 
+  /**
+   * This function is run when the robot is first started up and should be used for any
+   * initialization code.
+   */
   @Override
   public void robotInit() {
+    // Instantiate our RobotContainer.  This will perform all our button bindings, and put our
+    // autonomous chooser on the dashboard.
     m_robotContainer = new RobotContainer();
+    CameraServer.startAutomaticCapture("CAMERA 1", "/dev/video0").setVideoMode(PixelFormat.kMJPEG, 160, 120, 20);
   }
 
+
+
+  /**
+   * This function is called every robot packet, no matter the mode. Use this for items like
+   * diagnostics that you want ran during disabled, autonomous, teleoperated and test.
+   *
+   * <p>This runs after the mode specific periodic functions, but before
+   * LiveWindow and SmartDashboard integrated updating.
+   */
   @Override
   public void robotPeriodic() {
     CommandScheduler.getInstance().run();
-    _shooter.shooterPeriodic();
-    _indexer.sharp_sensorValues();
   }
 
-  /** This function is called once each time the robot enters Disabled mode. */
+  
+
+  /**
+   * This function is called once each time the robot enters Disabled mode.
+   */
   @Override
-  public void disabledInit() {}
+  public void disabledInit() {
+  }
 
   @Override
-  public void disabledPeriodic() {}
+  public void disabledPeriodic() {
+  }
 
-  /** This autonomous runs the autonomous command selected by your {@link RobotContainer} class. */
+  /**
+   * This autonomous runs the autonomous command selected by your {@link RobotContainer} class.
+   */
   @Override
   public void autonomousInit() {
-    // m_autonomousCommand = m_robotContainer.getAutonomousCommand();
-
+   // m_autonomousCommand = m_robotContainer.getAutonomousCommand();
     // schedule the autonomous command (example)
+    System.out.println("I have received an autonomous command?");
     if (m_autonomousCommand != null) {
-      m_autonomousCommand.schedule();
+      System.out.println(m_autonomousCommand.toString());
+      m_autonomousCommand.schedule(false);
     }
   }
 
-  /** This function is called periodically during autonomous. */
+  /**
+   * This function is called periodically during autonomous.
+   */
   @Override
   public void autonomousPeriodic() {
+    
   }
 
   @Override
   public void teleopInit() {
+    // This makes sure that the autonomous stops running when
+    // teleop starts running. If you want the autonomous to
+    // continue until interrupted by another command, remove
+    // this line or comment it out.
     if (m_autonomousCommand != null) {
       m_autonomousCommand.cancel();
     }
   }
 
-  /** This function is called periodically during operator control. */
+  /**
+   * This function is called periodically during operator control.
+   */
   @Override
   public void teleopPeriodic() {
   }
@@ -68,7 +103,10 @@ public class Robot extends TimedRobot {
     CommandScheduler.getInstance().cancelAll();
   }
 
-  /** This function is called periodically during test mode. */
+  /**
+   * This function is called periodically during test mode.
+   */
   @Override
-  public void testPeriodic() {}
+  public void testPeriodic() {
+  }
 }
